@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="movie.css">
+    <title>souzoku</title>
+</head>
+<body>
+    <h2>初めて相続について考える方へ</h2>
+    <hr class="cp_hr11" />
+    <p>相続について動画でご覧になりたい方はキーワード検索して動画をご覧いただけます</p>
+    <p>（例）相続・遺言・遺贈寄付など</p>
+    <div class="search_area">
+        <!-- <div id="logo"><img src="./images/logo.png" class="logo_image"></div> -->
+        <input type="text" id="search_text">
+        <button id="search_button">検索</button>
+    <div id="videoList" class="videolist"></div>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <hr class="cp_hr11" />
+    <p>相続の相談窓口や税金の質問はこちら</p>
+    <div class="banners">
+    <a href="https://www.koshonin.gr.jp/list" id="logo1"><img src="kousyounin.png" alt="" border="0" class="banner" /></a>
+    <a href="https://satsuben.or.jp/center/by_content/detail03-2.html" id="logo2"><img src="sba.png" alt="" border="0" class="banner" /></a>
+    <a href="https://www.nta.go.jp/taxes/shiraberu/zeimokubetsu/sozoku-zoyo.htm" id="logo3"><img src="nta.png" alt="" border="0" class="banner" /></a>
+    </div>
+    <hr class="cp_hr11" />
+    <!-- <img src="book.png" alt="" class="book"> -->
+
+
+
+<script>
+$("#search_button").on("click", function() {
+let searchText = $("#search_text").val();
+// リクエストパラメーターのセット
+const key = 'AIzaSyAvDRgC1jm-Ouv2Cs8Slnh0NUb3o8aFGCk';  //API key
+let url = 'https://www.googleapis.com/youtube/v3/search?'; //API URL
+url += 'type=video';
+url += '&part=snippet';
+url += `&q=${searchText}`;
+url += '&videoEmbeddable=true';
+url += '&videoSyndicated=true';
+url += '&maxresults=6';
+url += '&key=' + key;
+console.log(url);
+
+
+// HTMLが読み込まれてから実行する処理
+$(function() {
+    // youtubeの動画を検索して取得
+    $.ajax({
+        url: url,
+        dataType : 'jsonp'
+    })
+   .done(function(data){
+    //データの取得ができたときの処理
+    if (data.items) {
+    setData(data);        // データ取得成功時の処理
+    function setData(data) {
+        let result = '';
+        let video = '';
+        // 動画を表示するHTMLを作成する
+        for (let i = 0; i < data.items.length; i++) {
+            video = '<iframe src="https://www.youtube.com/embed/';
+            video += data.items[i].id.videoId;
+            video +=  '" allowfullscreen></iframe>';
+            result += '<div class="video">' + video + '</div>'
+        }
+        // HTMLに反映する
+        $('#videoList').html(result);
+    }
+    } else{
+        console.log(data);
+        alert('該当データがありませんでした');
+    }
+   }).fail(function(){
+       alert('通信エラーで取得できませんでした');
+   }) 
+});
+
+});
+
+
+// zoom API
+// API KEY   CIlcpBo6R3KdxAcC8QhZ4g
+// API SECRET  po4aqZkHUOcXwF6CXArqy80F1rce3IeFjzmQ
+// チャット履歴トークン  eyJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJmbDNkQUs1N1FTeVdRVklDZlNUeTRBIn0.lBrCuX9Ze9cf29DRvxPaaruniWVuzl7jpyabsQzSVxc
+// JWT トークン   eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOm51bGwsImlzcyI6IkNJbGNwQm82UjNLZHhBY0M4UWhaNGciLCJleHAiOjE2NDIwNzkxNjMsImlhdCI6MTY0MjA3Mzc2M30.fDSug8Yg261yQy7w4hZ3fzuMCaFcMkw3c7qbKKw7924
+
+const jwt = require('jsonwebtoken')
+const axios = require('axios')
+
+const ZoomClient = (token) => {
+  return axios.create({
+    baseURL: 'https://api.zoom.us/v2/',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-Requested-With': 'XMLHttpRequest',
+      authorization: `Bearer ${token}`
+    },
+    responseType: 'json'
+  })
+}
+
+const apiKey = 'eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOm51bGwsImlzcyI6IkNJbGNwQm82UjNLZHhBY0M4UWhaNGciLCJleHAiOjE2NDIwNzkxNjMsImlhdCI6MTY0MjA3Mzc2M30.fDSug8Yg261yQy7w4hZ3fzuMCaFcMkw3c7qbKKw7924'
+const apiSecret = 'po4aqZkHUOcXwF6CXArqy80F1rce3IeFjzmQ'
+
+const payload = {
+  iss: apiKey,
+  exp: new Date().getTime() + 5000
+}
+const token = jwt.sign(payload, apiSecret)
+const client = ZoomClient(token)
+const userId = '<YOUR ZOOM USER ID>'
+client.post(`users/${userId}/meetings`, {}).then((response) => {
+  console.log(response)
+})
+
+
+
+// curl -H "Authorization: Bearer {eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOm51bGwsImlzcyI6IkNJbGNwQm82UjNLZHhBY0M4UWhaNGciLCJleHAiOjE2NDIwNzkxNjMsImlhdCI6MTY0MjA3Mzc2M30.fDSug8Yg261yQy7w4hZ3fzuMCaFcMkw3c7qbKKw7924}" https://api.zoom.us/v2/users
+
+
+
+
+    </script>
+
+
+
+<script></script>
+
+
+
+</body>
+</html>
